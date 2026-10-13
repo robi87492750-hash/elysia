@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+characters/*/frameseq/
+# Character artwork redistribution rights are still unverified.
+characters/elysia/
+*.log
+.env
+.env.*
+!.env.example
