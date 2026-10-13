@@ -515,10 +515,10 @@ def _default_corner_pos(host, avail) -> tuple[int, int]:
     sbr = sbr_fn() if callable(sbr_fn) else None
     if sbr is not None and (sbr.width(), sbr.height()) != (host._w, host._h):
         # The feeding house occupies the outermost bottom-right strip.
-        x = avail.right() - catalog.CORNER_MARGIN - 126 + 1 - sbr.x() - sbr.width()
+        x = avail.right() - catalog.CORNER_MARGIN - 190 + 1 - sbr.x() - sbr.width()
         y = avail.bottom() + 1 - sbr.y() - sbr.height()
         return int(x), int(y)
-    return (avail.right() - host._w - catalog.CORNER_MARGIN - 126,
+    return (avail.right() - host._w - catalog.CORNER_MARGIN - 190,
             avail.bottom() - host._h)
 
 

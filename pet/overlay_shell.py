@@ -1287,7 +1287,7 @@ class OverlayShell(QObject):
     @staticmethod
     def _default_corner_pos(bounds: QRect, rect: QRect) -> QPointF:
         """默认停在右下角小屋左侧，底边贴可用区底。"""
-        return QPointF(bounds.x() + bounds.width() - 1 - rect.width() - catalog.CORNER_MARGIN - 126,
+        return QPointF(bounds.x() + bounds.width() - 1 - rect.width() - catalog.CORNER_MARGIN - 190,
                        bounds.y() + bounds.height() - 1 - rect.height())
 
     # ---------------------------------------------------------------- 主 sprite 接线
