@@ -1279,6 +1279,7 @@ class AppShell:
         # overlay 拓扑产品壳（4.1a）：仅 overlay 拓扑构造；捕获模式与显式
         # PET_RENDER_TOPOLOGY=legacy 都走 legacy 单窗，恒为 None
         self._overlay_shell = None
+        self._feeding_house = None
         # D4：桌宠单实例进程门（由 main() 抢到后传入；两个拓扑都有，只有直接
         # 构造 AppShell 的测试路径才会拿到 None）。释放挂在会话结束路径
         # （_on_session_end）与 main() 的 finally。
@@ -2379,6 +2380,7 @@ class AppShell:
             else:
                 self._build_empty_pet_tray()
             self._refresh_legacy_profile_if_changed()
+        self._show_feeding_house()
         # 批5.2a：进程级共享全屏 watcher 在主窗就绪后启动（自省任一窗是否需要，
         # 无需窗——环则空转）；flag 关时 _shared 为 None，no-op。
         if self._shared is not None:
@@ -2405,6 +2407,74 @@ class AppShell:
         # 派生（否则系统会弹 0xc0000142 阻塞关机）。
         self._install_session_watcher()
         self._announce_slot0_profile_problem()
+
+    def _show_feeding_house(self) -> None:
+        """Keep the corner house independent of either pet rendering topology."""
+        if self._feeding_house is not None:
+            return
+        from .feeding_house import FeedingHouse
+
+        house = FeedingHouse(self.app, self._feed_from_house)
+        self._feeding_house = house
+        self.app.aboutToQuit.connect(house.close)
+        house.show()
+        QTimer.singleShot(800, self._avoid_feeding_house_overlap)
+
+    def _avoid_feeding_house_overlap(self) -> None:
+        """Move a pet saved in the house's corner to the adjacent resting spot."""
+        house = self._feeding_house
+        if house is None:
+            return
+        overlay = self._overlay_shell
+        if overlay is not None:
+            sprite = overlay.alert_target_sprite()
+            if sprite is not None and overlay.isVisible() \
+                    and overlay.visible_content_rect().intersects(house.geometry()):
+                overlay._go_default_corner(sprite)
+            return
+        win = getattr(self.instance, "win", None)
+        if win is not None and win.isVisible() \
+                and win.visible_content_rect().intersects(house.geometry()):
+            win.go_default_corner()
+
+    def _feed_from_house(self, treat_id: str) -> bool:
+        """Play the available response clip and show the chosen treat's bubble."""
+        from .feeding_house import TREATS
+
+        message = next((bubble for key, _label, bubble in TREATS if key == treat_id), None)
+        if message is None:
+            return False
+        overlay = self._overlay_shell
+        if overlay is not None:
+            sprite = overlay.alert_target_sprite()
+            if sprite is None or not overlay.isVisible():
+                return False
+            try:
+                categories = overlay.behavior._categories(sprite.library)
+                clips = categories.get("clicks") or categories.get("acts") or categories.get("idles") or ()
+                if clips:
+                    overlay.behavior.play_once(sprite, clips[0])
+                if sprite is overlay.sprite:
+                    overlay.show_bubble(message, duration_ms=3600)
+                else:
+                    overlay._sprite_host(sprite).show_bubble(message, duration_ms=3600)
+            except Exception:
+                logging.exception("小屋投喂反馈失败")
+                return False
+            return True
+
+        win = getattr(self.instance, "win", None)
+        if win is None or not win.isVisible():
+            return False
+        try:
+            clips = win.clicks or win.acts or win.idles
+            if clips:
+                win.request_link_anim(clips[0])
+            win.show_bubble(message, duration_ms=3600)
+        except Exception:
+            logging.exception("小屋投喂反馈失败")
+            return False
+        return True
 
     def _announce_slot0_profile_problem(self) -> None:
         """slot0 档案降级后的**可见**告知（含文件路径与恢复动作）。

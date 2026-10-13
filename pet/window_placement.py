@@ -506,7 +506,7 @@ def _move_towards(host, x: float, y: float) -> None:
 def _default_corner_pos(host, avail) -> tuple[int, int]:
     """默认右下角落位（虚拟窗口坐标）。
 
-    有稳定身体框时按角色语义：身体右缘距可用区 CORNER_MARGIN、脚底贴
+    有稳定身体框时按角色语义：身体右缘为右下角小屋留出空间、脚底贴
     可用区底。旧算式量的是画布窗口，实际残留 = CORNER_MARGIN + 素材透明
     边距（实测右侧 178px，而 CORNER_MARGIN 意图只有 24px）。无身体框
     （轻量桩/未声明 body_box 的角色包回退全窗口）时保持旧算式逐像素一致。
@@ -514,10 +514,11 @@ def _default_corner_pos(host, avail) -> tuple[int, int]:
     sbr_fn = getattr(host, '_stable_body_local_rect', None)
     sbr = sbr_fn() if callable(sbr_fn) else None
     if sbr is not None and (sbr.width(), sbr.height()) != (host._w, host._h):
-        x = avail.right() - catalog.CORNER_MARGIN + 1 - sbr.x() - sbr.width()
+        # The feeding house occupies the outermost bottom-right strip.
+        x = avail.right() - catalog.CORNER_MARGIN - 126 + 1 - sbr.x() - sbr.width()
         y = avail.bottom() + 1 - sbr.y() - sbr.height()
         return int(x), int(y)
-    return (avail.right() - host._w - catalog.CORNER_MARGIN,
+    return (avail.right() - host._w - catalog.CORNER_MARGIN - 126,
             avail.bottom() - host._h)
 
 
