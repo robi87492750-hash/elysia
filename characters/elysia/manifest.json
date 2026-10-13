@@ -1,0 +1,25 @@
+{
+  "drag": "悬空反馈.webm",
+  "body_box": [
+    196,
+    30,
+    443,
+    330
+  ],
+  "head_box": [
+    196,
+    30,
+    443,
+    195
+  ],
+  "turn": "轻盈转身.webm",
+  "clicks": [
+    "开心回应.webm"
+  ],
+  "idle": "Q版待机呼吸.webm",
+  "name": "女仆爱莉希雅 / Elysia",
+  "moves": [
+    "轻快行走.webm"
+  ],
+  "static": "Q版女仆爱莉希雅.png"
+}
